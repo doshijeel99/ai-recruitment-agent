@@ -33,9 +33,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+MONGODB_URI = os.getenv("MONGODB_URI")
 # MongoDB setup
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://doshijeel99:pass%40123@jobs.pivca9t.mongodb.net/")
+client = motor.motor_asyncio.AsyncIOMotorClient("MONGODB_URI")
 db = client.smart_recruitment
 jobs_collection = db.jobs
 candidates_collection = db.candidates

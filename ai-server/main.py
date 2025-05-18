@@ -19,7 +19,7 @@ import asyncio
 
 # At the top of your file
 LLM_REQUEST_LOCK = asyncio.Lock()
-LLM_REQUEST_DELAY = 1.5  # seconds
+LLM_REQUEST_DELAY = 2.5  # seconds
 
 async def safe_agent_decide(prompt):
     async with LLM_REQUEST_LOCK:
@@ -40,6 +40,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = "llama3-8b-8192"
+MONGODB_URI = os.getenv("MONGODB_URI")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 logging.basicConfig(level=logging.INFO)
 
@@ -53,7 +54,7 @@ app.add_middleware(
 )
 
 # MongoDB setup
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://doshijeel99:pass%40123@jobs.pivca9t.mongodb.net/")
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URI)
 db = client.smart_recruitment
 jobs_collection = db.jobs
 candidates_collection = db.candidates
@@ -354,6 +355,9 @@ async def ai_insights(job_id: str):
         insight = await safe_agent_decide(prompt)
     except RateLimitError:
         raise HTTPException(status_code=429, detail="AI rate limit reached. Please try again in a few seconds.")
+
+    # FIX: Return the insight!
+    return {"insight": insight}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
