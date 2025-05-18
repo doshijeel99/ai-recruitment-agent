@@ -19,7 +19,7 @@ import asyncio
 
 # At the top of your file
 LLM_REQUEST_LOCK = asyncio.Lock()
-LLM_REQUEST_DELAY = 2.5  # seconds
+LLM_REQUEST_DELAY = 5.5  # seconds
 
 async def safe_agent_decide(prompt):
     async with LLM_REQUEST_LOCK:
