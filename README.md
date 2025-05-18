@@ -100,7 +100,7 @@ cd ai-recruitment-agent
 ```
 ai-recruitment-agent/
 │
-├── ai-server/         # FastAPI backend (LLM, DB, API)
+├── ai-server/         # FastAPI backend (LLM, DB, API, Langchain Agent)
 ├── project/          # React.js frontend
 ├── README.md
 └── ...
