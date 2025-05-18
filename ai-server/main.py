@@ -157,34 +157,32 @@ async def upload_resume(
     
     resume_text = await extract_resume_text_from_pdf(file)
 
-    # Run all agent calls in parallel for speed
-    score_task = agent_decide(
+    # Run all agent calls SEQUENTIALLY to avoid rate limits
+    score_result = await safe_agent_decide(
         f"Score the following resume for the job requirements.\n\nResume: {resume_text}\nRequirements: {', '.join(job['requirements'])}"
     )
-    persona_task = agent_decide(
-        f"""Detect persona for this candidate.
-Resume: {resume_text}
-Job Title: {job['title']}
-Job Description: {job['description']}
-Requirements: {', '.join(job['requirements'])}"""
-    )
-    interview_tasks_task = agent_decide(
-        f"""Generate interview tasks for this candidate.
-Resume: {resume_text}
-Job Title: {job['title']}
-Job Description: {job['description']}
-Requirements: {', '.join(job['requirements'])}"""
-    )
-    performance_review_task = agent_decide(
+    persona_prompt = (
+    f"Analyze the following candidate's resume and the job context. Summarize the candidate's professional persona in one concise sentence, focusing on their strengths, work style, and fit for the role.\n\n"
+    f"Job Title: {job['title']}\n"
+    f"Job Description: {job['description']}\n"
+    f"Requirements: {', '.join(job['requirements'])}\n\n"
+    f"Candidate Resume:\n{resume_text}"
+)
+    persona_result = await safe_agent_decide(persona_prompt)
+    interview_tasks_prompt = (
+    "Given the following job description and candidate resume, generate a numbered list of 3 concise, technical interview tasks that directly assess the candidate's fit for this role. Each task should be clear and actionable.\n\n"
+    f"Job Title: {job['title']}\n"
+    f"Job Description: {job['description']}\n"
+    f"Requirements: {', '.join(job['requirements'])}\n\n"
+    f"Candidate Resume:\n{resume_text}"
+)
+    interview_tasks_result = await safe_agent_decide(interview_tasks_prompt)
+    performance_review_obj = await safe_agent_decide(
         f"""Generate a performance review and metrics for this candidate.
 Resume: {resume_text}
 Job Title: {job['title']}
 Job Description: {job['description']}
 Requirements: {', '.join(job['requirements'])}"""
-    )
-
-    score_result, persona_result, interview_tasks_result, performance_review_obj = await asyncio.gather(
-        score_task, persona_task, interview_tasks_task, performance_review_task
     )
 
     score = extract_agent_output(score_result, float)
@@ -214,6 +212,7 @@ Requirements: {', '.join(job['requirements'])}"""
     await candidates_collection.insert_one(candidate_dict)
     candidate_dict.pop("_id", None)
     return {"message": "Candidate processed", "candidate": candidate_dict}
+
 
 @app.patch("/candidates/{candidate_id}/status")
 async def update_candidate_status(candidate_id: str = Path(...), status: str = Body(..., embed=True)):

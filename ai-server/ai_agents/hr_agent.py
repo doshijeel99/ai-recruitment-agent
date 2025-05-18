@@ -52,9 +52,11 @@ async def detect_persona_tool(input_str: str):
         "description": desc_match.group(1).strip() if desc_match else "",
         "requirements": [r.strip() for r in req_match.group(1).split(",")] if req_match else []
     }
-    return await detect_persona_with_langchain(resume_text, job)
+    # Only return the LLM's persona string
+    persona = await detect_persona_with_langchain(resume_text, job)
+    return persona
+
 async def interview_tasks_tool(input_str: str):
-    import re
     resume_match = re.search(r"Resume:\s*(.*?)\n(?:Job Title:|Job Description:|Requirements:)", input_str, re.DOTALL)
     title_match = re.search(r"Job Title:\s*(.*?)\n", input_str)
     desc_match = re.search(r"Job Description:\s*(.*?)\n", input_str)
@@ -65,8 +67,9 @@ async def interview_tasks_tool(input_str: str):
         "description": desc_match.group(1).strip() if desc_match else "",
         "requirements": [r.strip() for r in req_match.group(1).split(",")] if req_match else []
     }
-    return await generate_interview_tasks_with_langchain(resume_text, job)
-
+    # Only return the LLM's interview tasks (list or string)
+    tasks = await generate_interview_tasks_with_langchain(resume_text, job)
+    return tasks
 
 tools = [
     Tool(
