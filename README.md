@@ -89,6 +89,12 @@ cd ai-recruitment-agent
 ---
 
 
+## 📺 Demo Video
+
+[![Watch on YouTube](https://www.youtube.com/watch?v=q0oDBIbvH2o)]
+
+---
+
 ## 📂 Project Structure
 
 ```
